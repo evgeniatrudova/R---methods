@@ -1,0 +1,125 @@
+# Load necessary libraries
+library(ggplot2)
+library(cluster) # For silhouette score
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Create a synthetic dataset
+n <- 200 # Number of samples
+p <- 2   # Number of features
+
+# Generate features
+feature1 <- rnorm(n)
+feature2 <- rnorm(n)
+
+# Combine features into a data frame
+data <- data.frame(feature1, feature2)
+
+# Determine the optimal number of clusters using the Elbow Method
+wcss <- function(k) {
+  kmeans(data, centers = k, nstart = 25)$tot.withinss
+}
+
+k_values <- 1:10
+wcss_values <- sapply(k_values, wcss)
+
+# Plot Elbow Method
+elbow_plot <- ggplot(data.frame(k=k_values, wcss=wcss_values), aes(x=k, y=wcss)) +
+  geom_line() +
+  geom_point() +
+  labs(
+    title = "Elbow Method for Optimal Number of Clusters",
+    x = "Number of Clusters",
+    y = "Within-Cluster Sum of Squares (WCSS)"
+  ) +
+  theme_minimal()
+
+# Perform K-means clustering with a chosen number of clusters (e.g., k=3)
+k <- 3
+kmeans_model <- kmeans(data, centers = k, nstart = 25)
+
+# Assign clusters to the data
+data$cluster <- as.factor(kmeans_model$cluster)
+
+# Calculate Silhouette Score
+sil <- silhouette(kmeans_model$cluster, dist(data))
+silhouette_score <- mean(sil[, 3])
+
+# Calculate Within-Cluster Sum of Squares (WCSS)
+wcss <- kmeans_model$tot.withinss
+
+# Prepare centroid data for plotting
+centers_df <- as.data.frame(kmeans_model$centers)
+colnames(centers_df) <- colnames(data)
+
+# Plot the clusters and centroids
+clusters_plot <- ggplot(data, aes(x = feature1, y = feature2, color = cluster)) +
+  geom_point(size = 3) +
+  geom_point(data = centers_df, aes(x = feature1, y = feature2), color = "black", size = 5, shape = 8) +
+  labs(
+    title = "K-Means Clustering",
+    subtitle = paste("Silhouette Score:", round(silhouette_score, 2)),
+    caption = paste(
+      "This plot shows K-means clustering with 3 clusters.\n",
+      "The silhouette score measures cluster cohesion and separation.\n",
+      "Within-Cluster Sum of Squares (WCSS):", round(wcss, 2), "\n",
+      "Note: RMSE, MAE, and R² are not applicable to clustering."
+    ),
+    x = "Feature 1",
+    y = "Feature 2"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.margin = margin(10, 10, 80, 30), # Increased bottom margin for text
+    axis.text = element_text(size = 10), # Improve readability of axis labels
+    axis.title = element_text(size = 12), # Larger axis titles
+    plot.title = element_text(size = 14, face = "bold"), # Bold title
+    plot.subtitle = element_text(size = 12), # Subtitle size
+    plot.caption = element_text(size = 10, hjust = 0) # Caption size and alignment
+  )
+
+# Save the plots as images
+ggsave("Elbow_Method.png", plot = elbow_plot, width = 8, height = 6, dpi = 300)
+ggsave("KMeans_Clustering.png", plot = clusters_plot, width = 8, height = 6, dpi = 300)
+
+# Print evaluation metrics
+cat("Silhouette Score:", silhouette_score, "\n")
+cat("Within-Cluster Sum of Squares (WCSS):", wcss, "\n")
+
+# Create the Elbow Method plot
+elbow_plot <- ggplot(data.frame(k=k_values, wcss=wcss_values), aes(x=k, y=wcss)) +
+  geom_line() +
+  geom_point() +
+  labs(
+    title = "Elbow Method for Optimal Number of Clusters",
+    x = "Number of Clusters",
+    y = "Within-Cluster Sum of Squares (WCSS)"
+  ) +
+  theme_minimal()
+
+# Create the K-Means Clustering plot
+clusters_plot <- ggplot(data, aes(x = feature1, y = feature2, color = cluster)) +
+  geom_point(size = 3) +
+  geom_point(data = centers_df, aes(x = feature1, y = feature2), color = "black", size = 5, shape = 8) +
+  labs(
+    title = "K-Means Clustering",
+    subtitle = paste("Silhouette Score:", round(silhouette_score, 2)),
+    caption = paste(
+      "This plot shows K-means clustering with 3 clusters.\n",
+      "The silhouette score measures cluster cohesion and separation.\n",
+      "Within-Cluster Sum of Squares (WCSS):", round(wcss, 2), "\n",
+      "Note: RMSE, MAE, and R² are not applicable to clustering."
+    ),
+    x = "Feature 1",
+    y = "Feature 2"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.margin = margin(10, 10, 80, 30), # Increased bottom margin for text
+    axis.text = element_text(size = 10), # Improve readability of axis labels
+    axis.title = element_text(size = 12), # Larger axis titles
+    plot.title = element_text(size = 14, face = "bold"), # Bold title
+    plot.subtitle = element_text(size = 12), # Subtitle size
+    plot.caption = element_text(size = 10, hjust = 0) # Caption size and alignment
+  )
