@@ -1,0 +1,70 @@
+install.packages("e1071")
+
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(ChemometricsWithR)
+library(e1071)
+
+# Load the NIR dataset
+data(NIR)
+
+# Extract a specific column of interest from the dataset (e.g., column 1 for simplicity)
+nir_data <- NIR[, 1]
+
+# Calculate theoretical quantiles and sample quantiles
+nir_data <- data.frame(
+  Values = nir_data,
+  Theoretical = qqnorm(nir_data, plot.it = FALSE)$x,
+  Sample = qqnorm(nir_data, plot.it = FALSE)$y
+)
+
+# Generate a Q-Q plot
+qq_plot <- ggplot(nir_data, aes(sample = Values)) +
+  stat_qq(aes(color = Values)) +
+  stat_qq_line() +
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(
+    title = "Q-Q Plot for NIR Data in Drug Discovery",
+    subtitle = "Quantile-Quantile Plot against Normal Distribution",
+    caption = paste(
+      "This Q-Q plot compares the quantiles of the NIR dataset to the quantiles of a standard normal distribution.\n",
+      "Data points on the line indicate that the data is normally distributed.\n",
+      "Data points above the line suggest that the data has heavier tails than a normal distribution (positive kurtosis).\n",
+      "Data points below the line indicate that the data has lighter tails than a normal distribution (negative kurtosis).\n",
+      "Evaluation metrics: Mean =", round(mean(nir_data$Values), 2), 
+      "SD =", round(sd(nir_data$Values), 2), 
+      "Skewness =", round(e1071::skewness(nir_data$Values), 2), 
+      "Kurtosis =", round(e1071::kurtosis(nir_data$Values), 2)
+    ),
+    x = "Theoretical Quantiles",
+    y = "Sample Quantiles"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.margin = margin(10, 10, 80, 30),
+    axis.text = element_text(size = 10),
+    axis.title = element_text(size = 12),
+    plot.title = element_text(size = 14, face = "bold"),
+    plot.subtitle = element_text(size = 12),
+    plot.caption = element_text(size = 10, hjust = 0)
+  )
+
+# Save the plot as an image
+ggsave("QQ_Plot_Drug_Discovery.png", plot = qq_plot, width = 10, height = 6, dpi = 300)
+
+# Print the plot
+print(qq_plot)
+
+# Evaluate the data
+mean_value <- mean(nir_data$Values)
+sd_value <- sd(nir_data$Values)
+skewness_value <- e1071::skewness(nir_data$Values)
+kurtosis_value <- e1071::kurtosis(nir_data$Values)
+
+# Print evaluation metrics
+cat("Evaluation of Q-Q Plot Data:\n")
+cat("Mean:", round(mean_value, 2), "\n")
+cat("Standard Deviation:", round(sd_value, 2), "\n")
+cat("Skewness:", round(skewness_value, 2), "\n")
+cat("Kurtosis:", round(kurtosis_value, 2), "\n")
