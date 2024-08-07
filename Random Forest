@@ -1,0 +1,82 @@
+# Load necessary libraries
+library(randomForest)
+library(ggplot2)
+library(caret) # For confusionMatrix
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Create a synthetic dataset
+n <- 200 # Number of samples
+p <- 2   # Number of features
+
+# Generate features
+feature1 <- rnorm(n)
+feature2 <- rnorm(n)
+
+# Generate a binary outcome variable with some correlation to the features
+prob <- 1 / (1 + exp(-(0.5 * feature1 - 0.3 * feature2)))
+outcome <- rbinom(n, 1, prob)
+
+# Combine into a data frame
+data <- data.frame(feature1, feature2, outcome = as.factor(outcome))
+
+# Split the data into training and test sets
+train_indices <- sample(1:nrow(data), size = 0.7 * nrow(data)) # 70% training
+train_set <- data[train_indices, ]
+test_set <- data[-train_indices, ]
+
+# Train the Random Forest model
+rf_model <- randomForest(outcome ~ ., data = train_set, ntree = 100, importance = TRUE)
+
+# Predict on the test set
+test_predictions <- predict(rf_model, test_set)
+
+# Calculate the confusion matrix and metrics
+conf_matrix <- confusionMatrix(test_predictions, test_set$outcome)
+
+# Extract accuracy, precision, recall, and F1 score
+accuracy <- conf_matrix$overall["Accuracy"]
+precision <- conf_matrix$byClass["Pos Pred Value"]
+recall <- conf_matrix$byClass["Sensitivity"]
+f1 <- (2 * precision * recall) / (precision + recall)
+
+# Print the calculated metrics
+cat("Test Set Accuracy:", accuracy, "\n")
+cat("Precision:", precision, "\n")
+cat("Recall:", recall, "\n")
+cat("F1 Score:", f1, "\n")
+
+# Prepare feature importance data for plotting
+importance_df <- as.data.frame(importance(rf_model))
+importance_df$Features <- rownames(importance_df)
+importance_df <- importance_df[order(importance_df$MeanDecreaseGini, decreasing = TRUE), ]
+
+# Create the plot with improved aesthetics
+ggplot(importance_df, aes(x = reorder(Features, MeanDecreaseGini), y = MeanDecreaseGini)) +
+  geom_bar(stat = "identity", fill = "steelblue", width = 0.5) + # Adjust width of bars
+  coord_flip() +
+  geom_text(aes(label = round(MeanDecreaseGini, 2)), hjust = -0.2, color = "black", size = 3.5) +
+  labs(
+    title = "Feature Importance from Random Forest Model",
+    subtitle = paste("Test Set Accuracy: ", round(accuracy, 2)),
+    caption = paste("This plot displays feature importance from a Random Forest model,\n",
+                    "trained on a synthetic dataset. The accuracy on the test set\n",
+                    "demonstrates the model's effectiveness. Random Forests enhance\n",
+                    "model performance by averaging predictions from multiple decision\n",
+                    "trees, providing a more stable and robust evaluation.\n\n",
+                    "Precision: ", round(precision, 2), "\n",
+                    "Recall: ", round(recall, 2), "\n",
+                    "F1 Score: ", round(f1, 2)),
+    x = "Features",
+    y = "Mean Decrease in Gini"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.margin = margin(10, 10, 80, 20), # Increased bottom margin for text
+    axis.text.y = element_text(size = 10), # Improve readability of feature names
+    axis.title = element_text(size = 12), # Larger axis titles
+    plot.title = element_text(size = 14, face = "bold"), # Bold title
+    plot.subtitle = element_text(size = 12), # Subtitle size
+    plot.caption = element_text(size = 10, hjust = 0) # Caption size and alignment
+  )
