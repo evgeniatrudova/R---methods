@@ -17,3 +17,14 @@
 # Decision Tree
 
 <img src="https://github.com/user-attachments/assets/8efed619-1c8e-4b76-804c-dcf8bcf8988e" alt="Decision Tree" width="800"/>
+
+# Random Forest
+
+<img src="https://github.com/user-attachments/assets/7a387a91-a2cf-4dc6-8307-336f7a539687" alt="Random Forest" width="800"/>
+
+
+
+
+
+
+
