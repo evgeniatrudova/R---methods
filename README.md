@@ -38,9 +38,9 @@
 
 <img src="https://github.com/user-attachments/assets/618f2e29-3e1e-4358-822d-ec2413981b15" alt="Manhattan" width="600"/>
 
+# Q-Q Plot
 
-
-
+<img src="https://github.com/user-attachments/assets/c2cde79f-4c86-455c-bfe8-1f4fb394fa7d" alt="QQ" width="600"/>
 
 
 
