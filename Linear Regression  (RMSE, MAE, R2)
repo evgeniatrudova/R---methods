@@ -1,0 +1,38 @@
+# Load the ggplot2 library
+library(ggplot2)
+
+# Load the mtcars dataset (built into R)
+data(mtcars)
+
+# Fit a linear model: mpg (miles per gallon) as a function of wt (weight)
+model <- lm(mpg ~ wt, data=mtcars)
+
+# Make predictions using the fitted model
+predictions <- predict(model, mtcars)
+
+# Calculate RMSE (Root Mean Squared Error)
+rmse <- sqrt(mean((mtcars$mpg - predictions)^2))
+
+# Calculate MAE (Mean Absolute Error)
+mae <- mean(abs(mtcars$mpg - predictions))
+
+# Calculate R² (R-squared)
+r2 <- summary(model)$r.squared
+
+# Create a plot with ggplot2
+plot <- ggplot(mtcars, aes(x=wt, y=mpg)) +
+  geom_point() +  # Scatter plot of data points
+  geom_smooth(method="lm", col="red") +  # Add regression line
+  labs(
+    title="Linear Regression: MPG vs Weight",
+    subtitle=paste("RMSE:", round(rmse, 2), "\nMAE:", round(mae, 2), "\nR²:", round(r2, 2)),
+    x="Weight",
+    y="Miles Per Gallon"
+  ) +
+  theme_minimal()  # Use a minimal theme for the plot
+
+# Display the plot in the R environment
+print(plot)
+
+# Save the plot as a PNG file in your working directory
+ggsave("linear_regression_plot.png", plot)
