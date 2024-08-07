@@ -1,0 +1,64 @@
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# Create a synthetic dataset
+set.seed(123)
+n <- 1000  # Number of SNPs
+chromosomes <- rep(1:22, length.out = n)  # Correctly assign chromosomes
+positions <- sample(1:1e6, n, replace = TRUE)
+p_values <- runif(n)
+
+# Create a data frame
+data <- data.frame(
+  Chromosome = chromosomes,
+  Position = positions,
+  P_Value = p_values
+)
+
+# Add a significance threshold (e.g., -log10(p) < 5 for significance)
+data$NegLogP <- -log10(data$P_Value)
+threshold <- 5
+
+# Find the top 5 SNPs with highest -log10(p-values)
+top_5 <- data %>% arrange(desc(NegLogP)) %>% head(5)
+
+# Plot the Manhattan plot
+manhattan_plot <- ggplot(data, aes(x = Position, y = NegLogP, color = as.factor(Chromosome))) +
+  geom_point(alpha = 0.7, size = 1.5) +
+  geom_hline(yintercept = threshold, linetype = "dashed", color = "red") +
+  geom_point(data = top_5, aes(x = Position, y = NegLogP), color = "black", size = 3, shape = 17) +
+  scale_color_viridis_d() +
+  labs(
+    title = "Manhattan Plot",
+    subtitle = paste("Significance Threshold: -log10(p) =", threshold),
+    caption = paste(
+      "This plot displays p-values for SNPs across chromosomes.\n",
+      "The red dashed line indicates the significance threshold.\n",
+      "The black points represent the top 5 most significant SNPs.\n",
+      "Validation methods:\n",
+      "1. Summary Statistics of p-values:\n",
+      "   Min: ", round(min(data$P_Value), 5), "\n",
+      "   Max: ", round(max(data$P_Value), 5), "\n",
+      "   Mean: ", round(mean(data$P_Value), 5), "\n",
+      "   Std Dev: ", round(sd(data$P_Value), 5), "\n",
+      "2. Number of SNPs above the threshold: ", sum(data$NegLogP > threshold), "\n"
+    ),
+    x = "Position on Chromosome",
+    y = "-log10(p-value)"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.margin = margin(10, 10, 80, 30), # Increased bottom margin for text
+    axis.text = element_text(size = 10), # Improve readability of axis labels
+    axis.title = element_text(size = 12), # Larger axis titles
+    plot.title = element_text(size = 14, face = "bold"), # Bold title
+    plot.subtitle = element_text(size = 12), # Subtitle size
+    plot.caption = element_text(size = 10, hjust = 0) # Caption size and alignment
+  )
+
+# Save the plot as an image
+ggsave("Manhattan_Plot_Validated.png", plot = manhattan_plot, width = 10, height = 6, dpi = 300)
+
+# Print the plot
+print(manhattan_plot)
