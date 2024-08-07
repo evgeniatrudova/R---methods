@@ -12,17 +12,19 @@
 
 # Logistic Regression
 
-<img src="https://github.com/user-attachments/assets/0a91d98c-58a5-41f9-b496-f59518ee217a" alt="Logistic Regression" width="800"/>
+<img src="https://github.com/user-attachments/assets/0a91d98c-58a5-41f9-b496-f59518ee217a" alt="Logistic Regression" width="600"/>
 
 # Decision Tree
 
-<img src="https://github.com/user-attachments/assets/8efed619-1c8e-4b76-804c-dcf8bcf8988e" alt="Decision Tree" width="800"/>
+<img src="https://github.com/user-attachments/assets/8efed619-1c8e-4b76-804c-dcf8bcf8988e" alt="Decision Tree" width="600"/>
 
 # Random Forest
 
-<img src="https://github.com/user-attachments/assets/7a387a91-a2cf-4dc6-8307-336f7a539687" alt="Random Forest" width="800"/>
+<img src="https://github.com/user-attachments/assets/7a387a91-a2cf-4dc6-8307-336f7a539687" alt="Random Forest" width="600"/>
 
+# Support Vector Machine SVM
 
+<img src="https://github.com/user-attachments/assets/bb560966-32b2-4f85-90c1-39e479d3c117" alt="SVM" width="600"/>
 
 
 
