@@ -30,3 +30,22 @@
 
 <img src="https://github.com/user-attachments/assets/96dca471-ef8f-4e5d-930f-70513eb3d71e" alt="SVM" width="600"/>
 
+# Principal Component Analysis (PCA)
+
+<img src="https://github.com/user-attachments/assets/80453a1d-ce4b-4d34-9a0e-0a28dff99cdc" alt="PCA" width="600"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
