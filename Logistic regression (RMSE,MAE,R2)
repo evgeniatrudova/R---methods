@@ -1,0 +1,73 @@
+# Install and load necessary packages
+if (!require("ggplot2")) install.packages("ggplot2")
+if (!require("dplyr")) install.packages("dplyr")
+
+library(ggplot2)
+library(dplyr)
+
+# Load the iris dataset
+data(iris)
+
+# Convert the problem to binary classification: Setosa vs. Non-setosa
+iris$binary_outcome <- ifelse(iris$Species == "setosa", 1, 0)
+
+# Fit a logistic regression model: binary_outcome as a function of Sepal.Length
+model <- glm(binary_outcome ~ Sepal.Length, data=iris, family=binomial)
+
+# Create a sequence of values for prediction
+new_data <- data.frame(Sepal.Length = seq(min(iris$Sepal.Length), max(iris$Sepal.Length), length.out = 100))
+predictions_prob <- predict(model, new_data, type = "response")
+
+# Add predictions to new_data
+new_data$Predicted <- predictions_prob
+
+# Find points where the logistic regression line crosses specific Sepal Length values
+line_points <- new_data %>%
+  filter(Sepal.Length %in% c(4.5, 5.0, 5.5, 6.0, 6.5))
+
+# Calculate Accuracy
+predictions_binary <- ifelse(predictions_prob > 0.5, 1, 0)
+conf_matrix <- table(Predicted = predictions_binary, Actual = iris$binary_outcome)
+accuracy <- sum(diag(conf_matrix)) / sum(conf_matrix)
+
+# Plot
+plot <- ggplot(iris, aes(x = Sepal.Length, y = binary_outcome)) +
+  # Scatter plot of actual data with jitter to prevent overlapping
+  geom_jitter(aes(color = factor(binary_outcome)), alpha = 0.7, width = 0.2, height = 0.2) +
+  
+  # Add the logistic regression S-curve line
+  geom_line(data = new_data, aes(x = Sepal.Length, y = Predicted), color = "blue", size = 1) +
+  
+  # Add the threshold line at 0.5
+  geom_hline(yintercept = 0.5, linetype = "dashed", color = "red") +
+  
+  # Customize colors for the points and add a legend
+  scale_color_manual(values = c("0" = "red", "1" = "blue"), labels = c("Non-setosa", "Setosa")) +
+  
+  # Add labels and a subtitle explaining the plot
+  labs(
+    title = "Logistic Regression: Probability of Setosa",
+    x = "Sepal Length",
+    y = "Probability of Setosa",
+    subtitle = paste(
+      "The blue line represents the logistic regression S-curve showing the probability of an observation being Setosa based on Sepal Length.\n",
+      "The red dashed line is the threshold at 0.5 used to classify observations.\n",
+      "Blue points indicate Setosa (binary outcome = 1) and red points indicate Non-setosa (binary outcome = 0).\n",
+      "Sample Data Points on the S-Curve:\n",
+      paste(sprintf("Sepal Length: %.1f, Probability: %.2f", line_points$Sepal.Length, line_points$Predicted), collapse = "\n"),
+      "\nAccuracy: ", round(accuracy, 2)
+    ),
+    color = "Outcome"
+  ) +
+  
+  # Apply a minimal theme for the plot
+  theme_minimal() +
+  
+  # Adjust y-axis to fit the probability range and add breaks
+  scale_y_continuous(limits = c(-0.1, 1.1), breaks = c(0, 0.5, 1))
+
+# Display the plot in the R environment
+print(plot)
+
+# Save the plot as a PNG file in your working directory
+ggsave("logistic_regression_s_curve_with_validation.png", plot)
