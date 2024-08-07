@@ -34,7 +34,9 @@
 
 <img src="https://github.com/user-attachments/assets/80453a1d-ce4b-4d34-9a0e-0a28dff99cdc" alt="PCA" width="600"/>
 
+# Manhattan Plot
 
+<img src="https://github.com/user-attachments/assets/618f2e29-3e1e-4358-822d-ec2413981b15" alt="Manhattan" width="600"/>
 
 
 
