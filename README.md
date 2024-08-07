@@ -12,4 +12,8 @@
 
 # Logistic Regression
 
-<img src="https://github.com/user-attachments/assets/0a91d98c-58a5-41f9-b496-f59518ee217a" alt="Logistic Regression" width="400"/>
+<img src="https://github.com/user-attachments/assets/0a91d98c-58a5-41f9-b496-f59518ee217a" alt="Logistic Regression" width="800"/>
+
+# Decision Tree
+
+<img src="https://github.com/user-attachments/assets/8efed619-1c8e-4b76-804c-dcf8bcf8988e" alt="Decision Tree" width="800"/>
