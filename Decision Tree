@@ -1,0 +1,63 @@
+# Install and load necessary libraries
+if (!require("rpart")) install.packages("rpart")
+if (!require("rpart.plot")) install.packages("rpart.plot")
+if (!require("caret")) install.packages("caret")
+if (!require("grid")) install.packages("grid")
+
+library(rpart)         # For decision tree modeling
+library(rpart.plot)    # For plotting decision trees
+library(caret)         # For evaluation metrics
+library(grid)          # For additional text formatting in plots
+
+# Simulate a more complex genetic dataset
+set.seed(123)  # For reproducibility
+genetic_data <- data.frame(
+  Color = factor(sample(c("Green", "Yellow"), 200, replace = TRUE)),
+  Shape = factor(sample(c("Round", "Wrinkled"), 200, replace = TRUE)),
+  Size = factor(sample(c("Small", "Medium", "Large"), 200, replace = TRUE)),
+  Trait = factor(sample(c("High", "Low"), 200, replace = TRUE))
+)
+
+# Train a more complex decision tree model
+model <- rpart(Trait ~ Color + Shape + Size, data = genetic_data, method = "class",
+                control = rpart.control(maxdepth = 5, minsplit = 10))
+
+# Extract decision tree metrics
+predictions <- predict(model, genetic_data, type = "class")
+conf_matrix <- confusionMatrix(predictions, genetic_data$Trait)
+accuracy <- conf_matrix$overall['Accuracy']
+
+# Extract split points from the tree
+split_points <- as.data.frame(model$frame)
+split_points <- split_points[split_points$var != "<leaf>", ]
+
+# Create a plot for decision tree with rpart.plot
+plot <- rpart.plot(model, type = 3, extra = 101, 
+                   main = "Decision Tree for Genetic Traits",
+                   sub = NULL)  # Placeholder for custom subtitle
+
+# Save the plot as a PNG file
+ggsave("decision_tree_genetic_traits_complex.png", plot)
+
+# Reload the saved plot for annotation
+img <- png::readPNG("decision_tree_genetic_traits_complex.png")
+grid::grid.raster(img)
+
+# Overlay custom text on the plot
+grid.text(
+  label = paste(
+    "The tree classifies plants based on genetic traits.\n",
+    "Decision Tree Structure:\n",
+    paste0("Splits: ", nrow(split_points), "\n"),
+    "Validation Metrics:\n",
+    sprintf("Accuracy: %.2f%%", accuracy * 100),
+    "\nSplit Points:\n",
+    paste(sprintf("Node %d: %s", split_points$frame, split_points$var), collapse = "\n")
+  ),
+  x = unit(0.5, "npc"),    # Center text horizontally
+  y = unit(0.01, "npc"),   # Position text just below the plot
+  gp = gpar(fontsize = 10, fontfamily = "sans", lineheight = 1.2)  # Font size and style
+)
+
+# Display the plot with annotations
+grid::grid.draw()
