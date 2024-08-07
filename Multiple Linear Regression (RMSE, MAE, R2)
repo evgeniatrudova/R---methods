@@ -1,0 +1,40 @@
+# Load the ggplot2 library
+library(ggplot2)
+
+# Load the mtcars dataset (built into R)
+data(mtcars)
+
+# Fit a multiple linear model: mpg as a function of wt (weight) and hp (horsepower)
+model <- lm(mpg ~ wt + hp, data=mtcars)
+
+# Make predictions using the fitted model
+predictions <- predict(model, mtcars)
+
+# Calculate RMSE (Root Mean Squared Error)
+rmse <- sqrt(mean((mtcars$mpg - predictions)^2))
+
+# Calculate MAE (Mean Absolute Error)
+mae <- mean(abs(mtcars$mpg - predictions))
+
+# Calculate R² (R-squared)
+r2 <- summary(model)$r.squared
+
+# Create a plot with ggplot2
+# Note: For multiple regression, we typically use a 2D projection or residuals plot for visualization
+# Here, we use residuals vs fitted values as an example
+plot <- ggplot(mtcars, aes(x = predictions, y = mpg - predictions)) +
+  geom_point() +  # Scatter plot of residuals
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +  # Reference line at y = 0
+  labs(
+    title = "Multiple Linear Regression Residuals vs Fitted Values",
+    subtitle = paste("RMSE:", round(rmse, 2), "\nMAE:", round(mae, 2), "\nR²:", round(r2, 2)),
+    x = "Fitted Values",
+    y = "Residuals"
+  ) +
+  theme_minimal()  # Use a minimal theme for the plot
+
+# Display the plot in the R environment
+print(plot)
+
+# Save the plot as a PNG file in your working directory
+ggsave("multiple_linear_regression_plot.png", plot)
