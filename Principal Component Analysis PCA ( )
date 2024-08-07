@@ -1,0 +1,73 @@
+# Load necessary libraries
+library(ggplot2)
+library(ggfortify) # For autoplotting PCA results
+
+# Create a synthetic dataset
+set.seed(123)
+n <- 200  # Number of samples
+p <- 4    # Number of features
+
+# Generate synthetic features
+data <- data.frame(
+  feature1 = rnorm(n),
+  feature2 = rnorm(n),
+  feature3 = rnorm(n),
+  feature4 = rnorm(n)
+)
+
+# Perform PCA
+pca_result <- prcomp(data, scale. = TRUE)
+
+# Extract PCA results
+pca_scores <- data.frame(pca_result$x[, 1:2])  # First two principal components
+pca_scores$cluster <- as.factor(sample(1:3, n, replace = TRUE))  # Synthetic cluster labels
+
+# Calculate variance explained by each principal component
+explained_variance <- pca_result$sdev^2 / sum(pca_result$sdev^2)
+explained_variance <- data.frame(
+  Component = paste0("PC", 1:length(explained_variance)),
+  Variance = explained_variance
+)
+
+# Calculate reconstruction error
+reconstruction <- pca_result$x %*% t(pca_result$rotation) + pca_result$center
+reconstruction_error <- sqrt(mean((as.matrix(data) - reconstruction)^2))
+
+# Plot PCA results
+pca_plot <- ggplot(pca_scores, aes(x = PC1, y = PC2, color = cluster)) +
+  geom_point(size = 3) +
+  labs(
+    title = "Principal Component Analysis (PCA)",
+    subtitle = paste("Variance Explained: PC1 =", round(explained_variance$Variance[1] * 100, 2), 
+                      "%, PC2 =", round(explained_variance$Variance[2] * 100, 2), "%"),
+    caption = paste(
+      "This plot displays the PCA of a synthetic dataset.\n",
+      "The variance explained by each principal component shows how much of the data's variability is captured.\n",
+      "Reconstruction Error (RMSE):", round(reconstruction_error, 2), "\n",
+      "Variance Explained by PC1:", round(explained_variance$Variance[1] * 100, 2), "%\n",
+      "Variance Explained by PC2:", round(explained_variance$Variance[2] * 100, 2), "%.\n",
+      "PCA is valuable for dimensionality reduction and identifying patterns."
+    ),
+    x = "Principal Component 1",
+    y = "Principal Component 2"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.margin = margin(10, 10, 80, 30), # Increased bottom margin for text
+    axis.text = element_text(size = 10), # Improve readability of axis labels
+    axis.title = element_text(size = 12), # Larger axis titles
+    plot.title = element_text(size = 14, face = "bold"), # Bold title
+    plot.subtitle = element_text(size = 12), # Subtitle size
+    plot.caption = element_text(size = 10, hjust = 0) # Caption size and alignment
+  )
+
+# Save the plot as an image
+ggsave("PCA_Analysis.png", plot = pca_plot, width = 8, height = 6, dpi = 300)
+
+# Print the plot
+print(pca_plot)
+
+# Print evaluation metrics
+cat("Reconstruction Error (RMSE):", round(reconstruction_error, 2), "\n")
+cat("Variance Explained by PC1:", round(explained_variance$Variance[1] * 100, 2), "%\n")
+cat("Variance Explained by PC2:", round(explained_variance$Variance[2] * 100, 2), "%\n")
