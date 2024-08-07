@@ -26,7 +26,7 @@
 
 <img src="https://github.com/user-attachments/assets/bb560966-32b2-4f85-90c1-39e479d3c117" alt="SVM" width="600"/>
 
+# K-means clustering
 
-
-
+<img src="https://github.com/user-attachments/assets/96dca471-ef8f-4e5d-930f-70513eb3d71e" alt="SVM" width="600"/>
 
