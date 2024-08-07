@@ -1,0 +1,102 @@
+# Load necessary libraries
+library(e1071)      # For SVM
+library(caret)      # For confusionMatrix and cross-validation
+library(ggplot2)    # For plotting
+library(pROC)       # For ROC and AUC
+library(kernlab)    # For additional SVM functionalities
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Create a synthetic dataset
+n <- 200 # Number of samples
+p <- 2   # Number of features
+
+# Generate features
+feature1 <- rnorm(n)
+feature2 <- rnorm(n)
+
+# Generate a binary outcome variable with some correlation to the features
+prob <- 1 / (1 + exp(-(0.5 * feature1 - 0.3 * feature2)))
+outcome <- rbinom(n, 1, prob)
+
+# Combine into a data frame
+data <- data.frame(feature1, feature2, outcome = as.factor(outcome))
+
+# Split the data into training and test sets
+train_indices <- sample(1:nrow(data), size = 0.7 * nrow(data)) # 70% training
+train_set <- data[train_indices, ]
+test_set <- data[-train_indices, ]
+
+# Train the SVM model
+svm_model <- svm(outcome ~ ., data = train_set, kernel = "linear", cost = 1, scale = TRUE, probability = TRUE)
+
+# Predict on the test set
+test_predictions <- predict(svm_model, test_set)
+test_probabilities <- attr(predict(svm_model, test_set, probability = TRUE), "probabilities")[,2]
+
+# Calculate the confusion matrix and metrics
+conf_matrix <- confusionMatrix(test_predictions, test_set$outcome)
+
+# Extract accuracy, precision, recall, and F1 score
+accuracy <- conf_matrix$overall["Accuracy"]
+precision <- conf_matrix$byClass["Pos Pred Value"]
+recall <- conf_matrix$byClass["Sensitivity"]
+f1 <- (2 * precision * recall) / (precision + recall)
+
+# Validation metrics
+rmse_value <- sqrt(mean((as.numeric(test_set$outcome) - test_probabilities)^2))
+mae_value <- mean(abs(as.numeric(test_set$outcome) - test_probabilities))
+r2_value <- 1 - (sum((as.numeric(test_set$outcome) - test_probabilities)^2) / sum((as.numeric(test_set$outcome) - mean(as.numeric(test_set$outcome)))^2))
+
+# Cross-validation
+cv_results <- train(outcome ~ ., data = data, method = "svmLinear", trControl = trainControl(method = "cv", number = 10))
+cv_accuracy <- max(cv_results$results$Accuracy)
+
+# ROC and AUC
+roc_curve <- roc(as.numeric(test_set$outcome), test_probabilities)
+auc_value <- auc(roc_curve)
+
+# Print the calculated metrics
+cat("Test Set Accuracy:", accuracy, "\n")
+cat("Precision:", precision, "\n")
+cat("Recall:", recall, "\n")
+cat("F1 Score:", f1, "\n")
+cat("RMSE:", rmse_value, "\n")
+cat("MAE:", mae_value, "\n")
+cat("R²:", r2_value, "\n")
+cat("Cross-Validation Accuracy:", cv_accuracy, "\n")
+cat("AUC:", auc_value, "\n")
+
+# Plot decision boundary and metrics
+ggplot(data, aes(x = feature1, y = feature2, color = outcome)) +
+  geom_point(size = 3) +
+  geom_abline(slope = -svm_model$coefs[2] / svm_model$coefs[1], intercept = svm_model$rho / svm_model$coefs[1], color = "blue", linetype = "dashed") +
+  labs(
+    title = "SVM Decision Boundary",
+    subtitle = paste("Test Set Accuracy:", round(accuracy, 2)),
+    caption = paste(
+      "This plot shows the decision boundary of an SVM model, trained on a synthetic dataset.\n",
+      "The accuracy on the test set demonstrates the model's effectiveness.\n",
+      "Additional validation metrics:\n",
+      sprintf("RMSE: %.2f", rmse_value), "\n",
+      sprintf("MAE: %.2f", mae_value), "\n",
+      sprintf("R²: %.2f", r2_value), "\n",
+      sprintf("Cross-Validation Accuracy: %.2f", cv_accuracy), "\n",
+      sprintf("AUC: %.2f", auc_value)
+    ),
+    x = "Feature 1",
+    y = "Feature 2"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.margin = margin(10, 10, 80, 30), # Increased bottom margin for text
+    axis.text = element_text(size = 10), # Improve readability of axis labels
+    axis.title = element_text(size = 12), # Larger axis titles
+    plot.title = element_text(size = 14, face = "bold"), # Bold title
+    plot.subtitle = element_text(size = 12), # Subtitle size
+    plot.caption = element_text(size = 10, hjust = 0) # Caption size and alignment
+  )
+
+# Save the plot as an image
+ggsave("SVM_Decision_Boundary.png", width = 8, height = 6, dpi = 300)
